@@ -1,0 +1,22 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: openjdk11
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - $(aws ecr get-login --no-include-email --region ${region})
+  build:
+    commands:
+      - echo Build started on `date`
+      - cd ${codecommit_src_dir}
+      - GRADLE_OPTS=-Xmx1024m ./gradlew clean jib -x test -Djib.to.image="${ecr_repository_url}:${image_tag}" -Djib.console=plain
+      - echo Writing image definitions file...
+      - echo "[{\"name\":\"${container_name}\",\"imageUri\":\"${ecr_repository_url}:${image_tag}\"}]" > ../imagedefinitions.json
+artifacts:
+    files: imagedefinitions.json
+cache:
+  paths:
+    - '/root/.gradle/wrapper/**/*'

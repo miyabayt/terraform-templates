@@ -1,0 +1,57 @@
+[
+    {
+        "name": "${container_name}",
+        "image": "${container_image}",
+        "essential": true,
+        "ulimits": [
+            {
+                "name": "nofile",
+                "softLimit": 1024,
+                "hardLimit": 4096
+            }
+        ],
+        "portMappings": [
+            {
+                "hostPort": ${host_port},
+                "protocol": "tcp",
+                "containerPort": ${container_port}
+            }
+        ],
+        "environment": [
+            {
+                "name": "JAVA_TOOL_OPTIONS",
+                "value": "-XX:MaxRAMPercentage=90 -Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom -Dfile.encoding=utf-8 -Duser.language=ja -Duser.country=JP"
+            },
+            {
+                "name": "SPRING_PROFILES_ACTIVE",
+                "value": "development"
+            },
+            {
+                "name": "SPRING_DATASOURCE_URL",
+                "value": "jdbc:mysql://${rds_cluster_endpoint}:${rds_port}/${rds_schema}?useSSL=false"
+            },
+            {
+                "name": "SPRING_REDIS_HOST",
+                "value": "${elasticache_endpoint}"
+            }
+        ],
+        "secrets": [
+            {
+                "name": "SPRING_DATASOURCE_USERNAME",
+                "valueFrom": "/dev/${prefix}/DB_USER"
+            },
+            {
+                "name": "SPRING_DATASOURCE_PASSWORD",
+                "valueFrom": "/dev/${prefix}/DB_PASS"
+            }
+        ],
+        "logConfiguration": {
+            "logDriver": "awslogs",
+            "options": {
+                "awslogs-group": "${log_group_name}",
+                "awslogs-region": "${region}",
+                "awslogs-stream-prefix": "${log_stream_prefix}"
+            }
+        }
+    }
+]

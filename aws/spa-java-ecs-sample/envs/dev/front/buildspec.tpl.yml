@@ -1,0 +1,20 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 10
+    commands:
+      - cd ${codecommit_src_dir}
+      - yarn install
+  pre_build:
+    commands:
+      - echo "start to pre build..."
+      - yarn build:dev
+  post_build:
+    commands:
+      - aws s3 sync --exact-timestamps --delete ./dist/ s3://${cloudfront_s3_bucket_name}
+      - aws cloudfront create-invalidation --distribution-id ${cloudfront_distribution_id} --paths "/*"
+cache:
+  paths:
+    - 'node_modules/**/*'

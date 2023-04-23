@@ -1,0 +1,13 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      docker: 19
+  build:
+    commands:
+      - echo Build started on `date`
+      - cd ${codecommit_src_dir}
+  post_build:
+    commands:
+      - aws lambda update-function-code --function-name ${lambda_function_name} --zip-file fileb://build/function.zip 1> /dev/null
